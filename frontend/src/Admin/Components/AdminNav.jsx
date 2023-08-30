@@ -3,6 +3,7 @@ import { Badge, Drawer, Image, List, Space, Typography } from "antd";
 import { useEffect, useState ,useContext } from "react";
 import { getComments, getOrders } from "../API";
 import { GlobalContext } from '../../Context/context'
+import axios from "axios"; 
 
 
 function AppHeader() {
@@ -16,11 +17,29 @@ function AppHeader() {
     getComments().then((res) => {
       setComments(res.comments);
     });
-    getOrders().then((res) => {
-      setOrders(res.products);
-    });
+    const fetchOrders = async () => {
+      try {
+        const response = await axios.get("http://localhost:1234/api/all-orders");
+        const ordersArray = response.data.orders;
+        const productTitles = ordersArray.flatMap(order =>
+
+          order.items.map((item) => ({
+            key: item._id,
+            title: item.title,
+          }))
+          );
+console.log(productTitles)
+        setOrders(productTitles);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      }
+    };
+
+    fetchOrders();
   }, []);
 
+
+  console.log(orders)
   return (
    
     <div className="AppHeader">
@@ -46,6 +65,7 @@ function AppHeader() {
             }}
           />
         </Badge>
+
       </Space>
       <Drawer
         title="Comments"
@@ -63,25 +83,21 @@ function AppHeader() {
         ></List>
       </Drawer>
       <Drawer
-        title="Notifications"
-        open={notificationsOpen}
-        onClose={() => {
-          setNotificationsOpen(false);
-        }}
-        maskClosable
-      >
-        <List
-          dataSource={orders}
-          renderItem={(item) => {
-            return (
-              <List.Item>
-                <Typography.Text strong>{item.title}</Typography.Text> has been
-                ordered!
-              </List.Item>
-            );
-          }}
-        ></List>
-        </Drawer>
+  title="Notifications"
+  open={notificationsOpen}
+  onClose={() => {
+    setNotificationsOpen(false);
+  }}
+  maskClosable
+>
+<List
+  dataSource={orders}
+  renderItem={(item) => {
+    return <List.Item>{item.title} has been ordered!</List.Item>;
+  }}
+  />
+</Drawer>
+
         <div className=" p-3 d-flex text-white justify-content-between align-items-center">
         <button className="btn btn-outline-dark text-dark" onClick={() => dispatch({ type: "USER_LOGOUT" })}> 
        Logout

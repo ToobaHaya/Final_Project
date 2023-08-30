@@ -3,6 +3,7 @@ require('dotenv').config()
 var Mailgen = require('mailgen');
 const { connect } = require("mongoose");
 const Order = require('./models')
+const Product = require('../products/schema')
 
 const demoMail = async (req, res) => {
     const { email, customerName } = req.body;
@@ -88,7 +89,27 @@ const addOrders = async (req, res) => {
 
         try {
             await connect(process.env.MONGO_URL)
-            const order = await Order.create({ items, totalBill, customerAddress, customerContact, customerName, customerEmail })
+
+            // const itemsWithProductDetails = await Promise.all(
+            //     items.map(async (item) => {
+            //       const product = await Product.findById(item.productId);
+            //       return {
+            //         product: product._id,
+            //         quantity: item.quantity,
+            //         totalPrice: product.price * item.quantity, // Calculate total price per item
+            //       };
+            //     })
+            //   );
+          
+
+            const order = await Order.create({
+                items,
+                totalBill,
+                customerAddress,
+                customerContact,
+                customerName,
+                customerEmail,
+              });
 
 
             //EMAIL 

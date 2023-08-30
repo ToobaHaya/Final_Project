@@ -13,31 +13,48 @@ export default function LoginForm() {
 
     const loginUser = (e) => {
         e.preventDefault();
-        if (!email || !password) {
-                   alert('Please enter both email and password.');
-                     return;
-            }
         const payload = { email, password }
-
+        if (  !email || !password ) {
+            Swal.fire({
+                icon: 'warning',
+            title: 'Please fill in all required fields' 
+        });
+            return;
+        }
         axios.post('http://localhost:1234/api/login', payload)
-            .then((json) => {
-                Cookies.set('token', json.data.token)
+        .then((response) => {
+            const { data } = response;
+            if (data.token) {
+                Cookies.set('token', data.token);
                 dispatch({
-                    type: "USER_LOGIN",
-                    token: json.data.token
-                })
+                    type: 'USER_LOGIN',
+                    token: data.token,
+                });
                 Swal.fire({
-                                title: 'LogIn Successful!',
-                                text: 'You have successfully Log up.',
-                                icon: 'success',
-                                confirmButtonText: 'OK'
-                            })
-
-            })
-            .catch(err => console.log(err))
-
-    }
-
+                    title: 'LogIn Successful!',
+                    text: 'You have successfully logged in.',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                });
+            } else {
+                Swal.fire({
+                    title: 'Login Error',
+                    text: data.message || 'An error occurred during login.',
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                });
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+            Swal.fire({
+                title: 'Login Error',
+                text: 'An error occurred during login.',
+                icon: 'error',
+                confirmButtonText: 'OK',
+            });
+        });
+}
     return (
         <div className="flip-card__front">
             <div className="title">Log in</div>

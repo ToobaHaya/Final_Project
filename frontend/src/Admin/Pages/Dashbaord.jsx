@@ -7,6 +7,7 @@ import {
   import { Card, Space, Statistic, Table, Typography } from "antd";
   import { useEffect, useState } from "react";
   import { getCustomers, getInventory, getOrders, getRevenue } from "../API";
+  import axios from "axios";
   
   import {
     Chart as ChartJS,
@@ -136,12 +137,30 @@ import {
   
     useEffect(() => {
       setLoading(true);
-      getOrders().then((res) => {
-        setDataSource(res.products.splice(0, 3));
-        setLoading(false);
-      });
+      const fetchOrders = async () => {
+        try {
+          const response = await axios.get("http://localhost:1234/api/all-orders");
+          const ordersArray = response.data.orders;
+          const formattedData = ordersArray.map((order) =>
+            order.items.map((item) => ({
+              key: item._id,
+              title: item.title,
+              quantity: item.quantity,
+              price: item.price,
+              totalPrice: item.price * item.quantity,
+              thumbnail: item.thumbnail,
+            }))
+          );
+          setDataSource(formattedData.flat().splice(0, 3));
+          setLoading(false);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      
+      fetchOrders();
     }, []);
-  
+
     return (
       <>
         <Typography.Text>Recent Orders</Typography.Text>
@@ -157,7 +176,7 @@ import {
             },
             {
               title: "Price",
-              dataIndex: "discountedPrice",
+              dataIndex: "price",
             },
           ]}
           loading={loading}

@@ -35,10 +35,17 @@
             }
     
             const payload = { email, password, username };
-    
-            axios.post('/api/signup', payload)
-                .then((response) => {
-                    console.log(response.data);
+            if (  !email || !password || !username) {
+                Swal.fire({
+                    icon: 'warning',
+                title: 'Please fill in all required fields' 
+            });
+                return;
+            }
+            axios.post('http://localhost:1234/api/signup', payload)
+            .then((response) => {
+                console.log(response.data);
+                if (response.data.message === "Signup Successfully") {
                     Swal.fire({
                         title: 'Signup Successful!',
                         text: 'You have successfully signed up.',
@@ -47,12 +54,20 @@
                     }).then(() => {
                         navigate('/login');
                     });
-                })
+                } else if (response.data.message === "User Already Exists") {
+                    Swal.fire({
+                        title: 'User Already Exists',
+                        text: 'The provided email is already registered.',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            })
                 .catch((err) => {
                     console.log(err);
                     Swal.fire({
                         title: 'Signup Error',
-                        text: 'An error occurred during signup.',
+                        text: 'User Already Exist',
                         icon: 'error',
                         confirmButtonText: 'OK'
                     });
